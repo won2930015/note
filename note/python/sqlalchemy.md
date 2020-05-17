@@ -4,7 +4,7 @@ SQLAlchemy是Python界的ORM（Object Relational Mapper）框架，它两个主�
 
 ![架构图](http://docs.sqlalchemy.org/en/rel_0_8/_images/sqla_arch_small.png)
 
-####安装  
+#### 安装  
     
     pip install SQLAlchemy
     #检查安装是否成功:  
@@ -29,7 +29,7 @@ create_engine方法返回一个Engine实例，Engine实例只有直到触发数�
     2014-12-28 01:00:29,083 INFO sqlalchemy.engine.base.Engine show collation where `Charset` = ‘utf8’ and `Collation` = ‘utf8_bin’
     2014-12-28 01:00:29,083 INFO sqlalchemy.engine.base.Engine ()
 
-####声明一个映射（declare a Mapping)
+#### 声明一个映射（declare a Mapping)
 
 `declarative_base`类维持了一个从类到表的关系，通常一个应用使用一个base实例，所有实体类都应该继承此类对象
 
@@ -64,7 +64,7 @@ sqlalchemy 就是把Base子类转变为数据库表，定义好User类后，会�
 `Base.metadata`返回`sqlalchemy.schema.MetaData`对象，它是所有Table对象的集合，调用`create_all()`该对象会触发`CREATE TABLE`语句，如果数据库还不存在这些表的话。
 
 
-####创建Session
+#### 创建Session
 
 Session是真正与数据库通信的handler，你还可以把他理解一个容器，add就是往容器中添加对象  
 
@@ -84,7 +84,7 @@ Session是真正与数据库通信的handler，你还可以把他理解一个容
 
 执行完add方法后，`ed_user`对象处于pending状态，不会触发INSERT语句，当然ed_uesr.id也为None，如果在add方后有查询(session.query)，那么会flush一下，把数据刷一遍，把所有的pending信息先flush再执行query。  
 
-####对象状态
+#### 对象状态
 对象实例有四种状态，分别是：  
 
 1. Transient（瞬时的）：这个状态的对象还不在session中，也不会保存到数据库中，主键为None（不是绝对的，如果Persistent对象rollback后虽然主键id有值，但还是Transient状态的）。  
@@ -94,7 +94,7 @@ Session是真正与数据库通信的handler，你还可以把他理解一个容
     
 
 
-####查询
+#### 查询
 Query对象通过Session.query获取，query接收类或属性参数，以及多个类  
 
     for instance in session.query(User).order_by(User.id)
@@ -115,7 +115,7 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
 
     for user in session.query(User).filter(User.name==”ed”).all():
         print user
-####常用过滤操作：  
+#### 常用过滤操作：  
 
 * equals
 
@@ -156,7 +156,7 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
 对比一下Django：Django中ORM的filter方法里面只有一个等号，比如：  
 
     Entry.objects.all().filter(pub_date__year=2006)
-#####查询返回结果
+##### 查询返回结果
 
 * query.all()，all()返回列表  
 * query.first()：返回第一个元素
@@ -166,15 +166,15 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
     
     for user in session.query(User).filter(text(“id<224”)).order_by(text(“id”)).all():
         print user.name
-####count
+#### count
 有两种count，第一种是纯粹是执行SQL语句后返回有多少行，对应的函数count()，第二个是func.count()，适用在分组统计，比如按性别分组时，男的有多少，女的多少：  
 
     session.query(User).filter(User.name==’ed’).count()
     session.query(func.count(), User.name).group_by(User.name).all( )
 
-####Relattionship
+#### Relattionship
 SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一对一**,**多对多**  
-#####一对多(one to many）
+##### 一对多(one to many）
 因为外键(ForeignKey)始终定义在多的一方.如果relationship定义在多的一方,那就是多对一,一对多与多对一的区别在于其关联(relationship)的属性在多的一方还是一的一方，如果relationship定义在一的一方那就是一对多.  
 这里的例子中,一指的是Parent,一个parent有多个child.  
 
@@ -188,7 +188,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         id = Column(Integer,primary_key = True)
         parent_id = Column(Integer,ForeignKey('parent.id'))
 
-#####多对一(many to one)
+##### 多对一(many to one)
 这个例子中many是指parent了,意思是一个child可能有多个parent(父亲和母亲),这里的外键(child_id)和relationship(child)都定义在多(parent)的一方  
 
     class Parent(Base):
@@ -215,7 +215,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         session.commit()
 不过不设置cascade，删除parent时，其关联的chilren不会删除，只会把chilren关联的parent.id置为空，设置cascade后就可以级联删除children  
 
-#####一对一
+##### 一对一
 一对一就是多对一和一对多的一个特例,只需在relationship加上一个参数uselist=False替换多的一端就是一对一:  
 从一对多转换到一对一:  
 
@@ -239,7 +239,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     class Child(Base):
         __tablename__ = 'child'
         id = Column(Integer, primary_key=True)
-#####多对多
+##### 多对多
 多对多关系需要一个中间关联表,通过参数secondary来指定,  
 
     from sqlalchemy import Table,Text
@@ -259,7 +259,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         id = Column(Integer,primary_key = True)
         keyword = Column(String(50),nullable=False,unique=True)
 
-####关联查询（query with join）
+#### 关联查询（query with join）
 简单地可以使用：  
     for u, a in session.query(User, Address).filter(User.id==Address.user_id).filter(Address.email==’lzjun@qq.com’).all():
         print u, a
@@ -267,7 +267,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     
     session.query(User).join(Address).filter(Address.email==”lzjun@qq.com”).all()
 因为这里的外键就一个，系统知道如何去关联
-####relationship()API
+#### relationship()API
 [relationship()](http://docs.sqlalchemy.org/en/latest/orm/relationships.html#relationships-api)函数接收的参数非常多，比如：backref，secondary，primaryjoin，等等。列举一下我用到的参数:  
 
 - backref:在一对多或多对一之间建立双向关系,比如:  
@@ -338,10 +338,10 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
 
 
-#####association_proxy
+##### association_proxy
 [associationproxy](http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/associationproxy.html)是sqlalchemy扩展包里面的一个函数,是一个无关痛痒的提供便捷性的功能,在多的言语也不及官方文档的例子,还是看看文档吧.  
 
-#####column_propety
+##### column_propety
 可以用[column_property](http://docs.sqlalchemy.org/en/latest/orm/mapper_config.html#using-column-property)来实现SQL表达式作为映射类的属性(另外一种方式就是用hybrid),
  
 
@@ -388,7 +388,7 @@ one-to-one:
 
 
 
-####Session
+#### Session
 Session 使用 connection发送query，把返回的result row 填充到一个object中，该对象同时还会保存在Session中，Session内部有一个叫 Identity Map的数据结构，为每一个对象维持了唯一的副本。primary key 作为 key ，value就是该object。  
 session刚开始无状态，直到有query发起时。
 
@@ -409,13 +409,13 @@ session刚开始无状态，直到有query发起时。
         session.query(Artist).get(11)
         session.commit()
 
-####构造了session，何时commit，何时close
+#### 构造了session，何时commit，何时close
 规则：始终保持session与function和objecct分离
 
-####transaction scope  和  session scope
+#### transaction scope  和  session scope
 
 
-#####对象的四种状态
+##### 对象的四种状态
  对象在session中可能存在的四种状态包括：  
 
  - **Transient** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
@@ -432,14 +432,14 @@ Hibernate Session 缓存三大作用：
 2. 保证缓存的对象与数据库同步，位于缓存中的对象称为持久化对象
 3. 当持久化对象存在关联时，session保证不出现对象图的死锁
 
-####Session什么时候清理缓存
+#### Session什么时候清理缓存
 1. commit()方法调用的时候
 2. 查询时会清理缓存，保证查询结果能反映对象的最新状态
 3. 显示调用session的flush方法
 4.  
 
 
-####Querying
+#### Querying
 
     q = session.query(SomeMappedClass)
 
@@ -477,7 +477,7 @@ session的query方法就可以创建一个查询对象，
 使用subqueryload操作，饿汉式加载，查询user的时候，就把addresses查询出来了。  
 
 
-####传统映射
+#### 传统映射
 用Table构建一个table metadata，然后通过映射函数mapper与User关联起来  
 
     from sqlalchemy import Table,Metadata
@@ -499,7 +499,7 @@ session的query方法就可以创建一个查询对象，
         def __init__(self,name):
             self.name = name
 
-###使用加载策略（懒加载，饿加载）
+### 使用加载策略（懒加载，饿加载）
 SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因此，如果你在对象 detached 之后访问对象的 relationships，会报 "DetachedInstanceError" 错误。例如：
 
 user = session.query(User).get(id)
@@ -548,7 +548,7 @@ print user.comments  # OK
         session.commit()
 不过不设置cascade，删除parent时，其关联的chilren不会删除，只会把chilren关联的parent.id置为空，设置cascade后就可以级联删除children  
 
-####Session
+#### Session
 Session 使用 connection发送query，把返回的result row 填充到一个object中，该对象同时还会保存在Session中，Session内部有一个叫 Identity Map的数据结构，为每一个对象维持了唯一的副本。primary key 作为 key ，value就是该object。  
 session刚开始无状态，直到有query发起时。
 
@@ -569,12 +569,12 @@ session刚开始无状态，直到有query发起时。
         session.query(Artist).get(11)
         session.commit()
 
-####构造了session，何时commit，何时close
+#### 构造了session，何时commit，何时close
 规则：始终保持session与function和objecct分离
 
-####transaction scope  和  session scope
+#### transaction scope  和  session scope
 
-#####对象的四种状态
+##### 对象的四种状态
  对象在session中可能存在的四种状态包括：  
 
  - **Transient** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
@@ -591,7 +591,7 @@ Hibernate Session 缓存三大作用：
 2. 保证缓存的对象与数据库同步，位于缓存中的对象称为持久化对象
 3. 当持久化对象存在关联时，session保证不出现对象图的死锁
 
-####Session什么时候清理缓存
+#### Session什么时候清理缓存
 1. commit()方法调用的时候
 2. 查询时会清理缓存，保证查询结果能反映对象的最新状态
 3. 显示调用session的flush方法
@@ -619,9 +619,9 @@ _session.close()
 print user.comments  # OK
 print user.posts  # OK
 ======
-####Relattionship
+#### Relattionship
 
-#####一对多  （one to many）
+##### 一对多  （one to many）
 
 
 
@@ -640,7 +640,7 @@ mapping class link to table metadata
     scalar()返回的就是单一值，元组中的第0个值，而且scalar只使用于当前返回的是单个值，比如all()里面返回的10
 
 
-####Classic mapping
+#### Classic mapping
 
     from sqlalchemy import Table, MetaData
     from sqlalchemy.orm import mapper
@@ -656,7 +656,7 @@ mapping class link to table metadata
     mapper(Subject,subject)   #建立映射
 
 
-####Hybrid Attributes  混合属性
+#### Hybrid Attributes  混合属性
 属性在类和实例上有特殊的行为  
 
     from sqlalchemy import Column, Integer
@@ -726,7 +726,7 @@ mapping class link to table metadata
 看到了吧，和hybrid_property有相似之处
 
 
-####区别于属性的表达式装饰器
+#### 区别于属性的表达式装饰器
 
     from sqlalchemy import func
     
@@ -756,7 +756,7 @@ mapping class link to table metadata
 
 也支持setter
 
-####mapping class inheritance hierarchies 
+#### mapping class inheritance hierarchies 
 
 
 使用memecache做缓存的时候，出现了错误：读取一篇article，异常信息：  
@@ -792,7 +792,7 @@ http://docs.sqlalchemy.org/en/latest/orm/loading.html
 
 
 
-####错误总结:  
+#### 错误总结:  
 1.用column_property()函数做为类属性的时候:  
 
     Article.recommendCnt = column_property(select([func.count(ArticlePGoal.id)]).where(and_( 
@@ -820,7 +820,7 @@ http://docs.sqlalchemy.org/en/latest/orm/loading.html
 
 可以设置 `session.expire_on_commit = False`
 
-####列与数据类型
+#### 列与数据类型
 http://docs.sqlalchemy.org/en/rel_0_9/core/types.html  
 **BigInteger**对应数据库中的BIGINT
 **Boolean**对应BOOLEAN或SAMLLINT,Python端是True或False
@@ -836,8 +836,8 @@ http://docs.sqlalchemy.org/en/rel_0_9/core/types.html
 
 
 
-####映射类继承层次
+#### 映射类继承层次
 SQLAlchemy支持三种形式的继承,**单表继承**, 多个类对应单独的一个表,**具体表继承**:
 
-####Querying
+#### Querying
 http://docs.sqlalchemy.org/en/rel_0_9/orm/query.html#sqlalchemy.orm.query.Query.join
