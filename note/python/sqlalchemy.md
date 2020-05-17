@@ -656,7 +656,7 @@ mapping class link to table metadata
     mapper(Subject,subject)   #建立映射
 
 
-#### #Hybrid Attributes  混合属性
+#### #Hybrid Attributes  混合 属性
 属性在类和实例上有特殊的行为  
 
     from sqlalchemy import Column, Integer
@@ -756,7 +756,7 @@ mapping class link to table metadata
 
 也支持setter
 
-#### #mapping class inheritance hierarchies 
+#### #mapping class inheritance hierarchies (映射 类 继承 层次)
 
 
 使用memecache做缓存的时候，出现了错误：读取一篇article，异常信息：  
