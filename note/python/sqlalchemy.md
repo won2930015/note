@@ -577,10 +577,10 @@ session刚开始无状态，直到有query发起时。
 ##### #对象的四种状态
  对象在session中可能存在的四种状态包括：  
 
- - **Transient** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
- - **Pending** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
- - **Persistent** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying一个已经存在的实例。
- - **Detached**：一个对象它有记录在数据库中，但是不在任何session中，
+ - **Transient（瞬时）** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
+ - **Pending（挂起）** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
+ - **Persistent（持久化）** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying（查询）一个已经存在的实例。
+ - **Detached（分离）**：一个对象它有记录在数据库中，但是不在任何session中，
 
 
 #### #Hibernate中的Session
