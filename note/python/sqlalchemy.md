@@ -499,18 +499,18 @@ session的query方法就可以创建一个查询对象，
         def __init__(self,name):
             self.name = name
 
-### #使用加载策略（懒加载，饿加载）
-SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因此，如果你在对象 detached 之后访问对象的 relationships，会报 "DetachedInstanceError" 错误。例如：
+### #使用加载策略（Lazy Loading:懒加载，Eager Loading:饿加载）
+SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因此，如果你在对象 detached(分离) 之后访问对象的 relationships，会报 "DetachedInstanceError" 分离_实例_错误。例如：
 
 user = session.query(User).get(id)
-_session.close()
-print user.comments  # this will raise DetachedInstanceError
+session.close()
+print user.comments  #this will raise DetachedInstanceError
 如果你需要在对象 detach 后访问 relationships（例如需要跨进程共享对象），则应该使用 Eager Loading 策略：
 
-session.query(User).options(joinedload('comments')).get(id)
-_session.close()
-print user.comments  # OK
-如果需要加载所有的 relationships ，可以设置 Default Loading Strategies :
+session.query(User).options(joinedload('comments')).get(id) #joinedload('comments'):饿加载?
+session.close()
+print user.comments  #OK
+如果需要加载所有的 relationships ，可以设置 Default Loading Strategies(默认 加载 策略) :
 
     class Parent(Base):
         __tablename__ = 'parent'
@@ -549,7 +549,7 @@ print user.comments  # OK
 不过不设置cascade，删除parent时，其关联的chilren不会删除，只会把chilren关联的parent.id置为空，设置cascade后就可以级联删除children  
 
 #### #Session
-Session 使用 connection发送query，把返回的result row 填充到一个object中，该对象同时还会保存在Session中，Session内部有一个叫 Identity Map的数据结构，为每一个对象维持了唯一的副本。primary key 作为 key ，value就是该object。  
+Session 使用 connection发送query，把返回的result row 填充到一个object中，该对象同时还会保存在Session中，Session内部有一个叫 Identity Map(身份 映射)的数据结构，为每一个对象维持了唯一的副本。primary key 作为 key ，value就是该object。  
 session刚开始无状态，直到有query发起时。
 
 对象的变化会被session的跟踪维持着，在数据库做下一次查询后者当前的事务已经提交了时，it fushed all pendings changes to the database.   
@@ -565,14 +565,14 @@ session刚开始无状态，直到有query发起时。
     def unit_of_work():
         session = Session()
         album = session.query(Album).get(4)
-        album.name = "jun"   #这里修改了album的name属性，会触发一个update语句
-        session.query(Artist).get(11)
+        album.name = "jun"   #这里的album的name属性会被修改，会触发一个update语句
+        session.query(Artist).get(11)  
         session.commit()
 
 #### #构造了session，何时commit，何时close
 规则：始终保持session与function和objecct分离
 
-#### #transaction scope  和  session scope
+#### #transaction scope (事务 范围)  和  session scope (会话范围)
 
 ##### #对象的四种状态
  对象在session中可能存在的四种状态包括：  
@@ -583,7 +583,7 @@ session刚开始无状态，直到有query发起时。
  - **Detached（分离）**：一个对象它有记录在数据库中，但是不在任何session中，
 
 
-#### #Hibernate中的Session
+#### #Hibernate(休眠)中的Session
 SessionFactory创建Session，SessionFactory是线程安全的，而Session是线程不安全的。Session是轻量级的，创建和删除都不需要耗太大的资源，这与JDBC的connection不一样，Connection的创建时很好资源的。  
 Session对象内部有一个缓存，称之为Hibernate第一级缓存，每个session实例都有自己的缓存，存放的对象是当前工作单元中加载的对象。  
 Hibernate Session 缓存三大作用：  
@@ -615,9 +615,9 @@ Hibernate Session 缓存三大作用：
 
 
 session.query(User).options(joinedload('*')).get(id)
-_session.close()
-print user.comments  # OK
-print user.posts  # OK
+session.close()
+print user.comments  #OK
+print user.posts  #OK
 ======
 #### #Relattionship
 
