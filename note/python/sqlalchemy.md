@@ -744,8 +744,7 @@ mapping class link to table metadata
 
 这里为什么还要用radius.expression呢，对于查询：  
 
-    Session().query(Interval).filter(Interval.radius > 5)
-    
+    >>>Session().query(Interval).filter(Interval.radius > 5)    
     SELECT interval.id AS interval_id, interval.start AS interval_start,
     interval."end" AS interval_end
     FROM interval
