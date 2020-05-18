@@ -502,14 +502,14 @@ session的query方法就可以创建一个查询对象，
 ### #使用加载策略（Lazy Loading:懒加载，Eager Loading:饿加载）
 SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因此，如果你在对象 detached(分离) 之后访问对象的 relationships，会报 "DetachedInstanceError" 分离_实例_错误。例如：
 
-user = session.query(User).get(id)
-session.close()
-print user.comments  #this will raise DetachedInstanceError
+    user = session.query(User).get(id)
+    session.close()
+    print user.comments  #this will raise DetachedInstanceError
 如果你需要在对象 detach 后访问 relationships（例如需要跨进程共享对象），则应该使用 Eager Loading 策略：
 
-session.query(User).options(joinedload('comments')).get(id) #joinedload('comments'):饿加载?
-session.close()
-print user.comments  #OK
+    session.query(User).options(joinedload('comments')).get(id) #joinedload('comments'):饿加载?
+    session.close()
+    print user.comments  #OK
 如果需要加载所有的 relationships ，可以设置 Default Loading Strategies(默认 加载 策略) :
 
     class Parent(Base):
@@ -614,10 +614,10 @@ Hibernate Session 缓存三大作用：
 
 
 
-session.query(User).options(joinedload('*')).get(id)
-session.close()
-print user.comments  #OK
-print user.posts  #OK
+    session.query(User).options(joinedload('*')).get(id)
+    session.close()
+    print user.comments  #OK
+    print user.posts  #OK
 ======
 #### #Relattionship
 
