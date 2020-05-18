@@ -735,16 +735,21 @@ mapping class link to table metadata
     
         @hybrid_property 
         def radius(self):
-            return abs(self.length) / 2  #在Python函数abs()用于实例级操作之上
+            return abs(self.length) / 2  #在Python函数abs()用于实例级操作之上.
     
         @radius.expression
         def radius(cls):
-            return func.abs(cls.length) / 2 #，SQL函数abs()通过funcobject用于类级表达式.
-    
+            return func.abs(cls.length) / 2 #SQL函数abs()通过funcobject用于类级表达式.
+
 
 这里为什么还要用radius.expression呢，对于查询：  
 
     Session().query(Interval).filter(Interval.radius > 5)
+    
+    SELECT interval.id AS interval_id, interval.start AS interval_start,
+    interval."end" AS interval_end
+    FROM interval
+    WHERE abs(interval."end" - interval.start) / :abs_1 > :param_1
 直接像length一样不行吗?当然不行，不信，注释掉radius.expression试试。  
 
     TypeError: bad operand type for abs(): 'BinaryExpression'
