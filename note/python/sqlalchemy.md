@@ -70,7 +70,7 @@ Session是真正与数据库通信的handler，你还可以把他理解一个容
 
     from sqlalchemy.orm import sessionmaker
     Session = sessionmaker(bind=engine)
-
+    session=Session()
     #创建完session就可以添加数据了  
     ed_user = User('ed','Ed jone','edpasswd')
     session.add(ed_user)
@@ -97,11 +97,11 @@ Session是真正与数据库通信的handler，你还可以把他理解一个容
 #### #查询
 Query对象通过Session.query获取，query接收类或属性参数，以及多个类  
 
-    for instance in session.query(User).order_by(User.id)
-        print instance.name
+    for instance in session.query(User).order_by(User.id):
+        print(instance.name) 
 
     for name,fullname in session.query(User.name,User.fullname):
-        print name,fullname
+        print(name,fullname)
 
     # TODO
 
@@ -110,57 +110,57 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
     # sqlalchemy源码对filter_by的定义
     def filter_by(self, **kwargs):
     # 举例：
-    for user in session.query(User).filter_by(name=’ed’).all():
-        print user
+    for user in session.query(User).filter_by(name='ed').all():
+        print( user)
 
-    for user in session.query(User).filter(User.name==”ed”).all():
-        print user
+    for user in session.query(User).filter(User.name=='ed').all():
+        print( user)
 #### #常用过滤操作：  
 
 * equals
 
-        query.filter(User.name == 'ed')
+        session.query(User).filter(User.name == 'ed')
 * not equal
 
-        query.filter(User.name !='ed')
+        session.query(User).filter(User.name !='ed')
 * LIKE
 
-        query.filter(User.name.like('%d%')
+        session.query(User).filter(User.name.like('%d%')
 * IN:
 
-        query.filter(User.name.in_(['a','b','c'])
+        session.query(User).filter(User.name.in_(['a','b','c'])
 * NOT IN:
 
-        query.filter(~User.name.in_(['ed','x'])
+        session.query(User).filter(~User.name.in_(['ed','x'])
 * IS NULL:
 
-        filter(User.name==None)
+        session.query(User).filter(User.name==None)
 * IS NOT NULL:
 
-        filter(User.name!=None)
+        session.query(User).filter(User.name!=None)
 * AND
 
         from sqlalchemy import and_
         filter(and_(User.name == 'ed',User.fullname=='xxx'))    
     或者多次调用filter或filter_by
 
-        filter(User.name =='ed').filter(User.fullname=='xx')
+        session.query(User).filter(User.name =='ed').filter(User.fullname=='xx')
     还可以是：  
         
-        query.filter(User.name == ‘ed’, User.fullname == ‘Ed Jones’)
+        session.query(User).filter(User.name == ‘ed’, User.fullname == ‘Ed Jones’)
 * OR
 
         from sqlalchemy import or_
-        query.filter(or_(User.name == ‘ed’, User.name == ‘wendy’))
+        session.query(User).filter(or_(User.name == ‘ed’, User.name == ‘wendy’))
 
 对比一下Django：Django中ORM的filter方法里面只有一个等号，比如：  
 
     Entry.objects.all().filter(pub_date__year=2006)
 ##### #查询返回结果
 
-* query.all()，all()返回列表  
-* query.first()：返回第一个元素
-* query.one()有且只有一个元素时才正确返回。
+* query(User).all()，all()返回列表  
+* query(User).first()：返回第一个元素
+* query(User).one()有且只有一个元素时才正确返回。
 
 此外，filter函数还可以接收text对象，text是SQL查询语句的字面对象，比如：  
     
