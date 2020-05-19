@@ -78,9 +78,9 @@ Session是真正与数据库通信的handler，你还可以把他理解一个容
     #也可以使用session.add_all()添加多个对象 
     #session.add_all([user1,user2,user3])
 
-    print ed_user in session  # True
+    print (ed_user in session)  # True
     session.rollback()
-    print ed_user in session # False
+    print (ed_user in session) # False
 
 执行完add方法后，`ed_user`对象处于pending状态，不会触发INSERT语句，当然ed_uesr.id也为None，如果在add方后有查询(session.query)，那么会flush一下，把数据刷一遍，把所有的pending信息先flush再执行query。  
 
@@ -115,62 +115,66 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
 
     for user in session.query(User).filter(User.name=='ed').all():
         print( user)
-#### #常用过滤操作：  
-
+#### #常用过滤操作： 
+    ed_user = User('ed','Ed jone','edpasswd')
+    session.add(ed_user)
+    query=session.query(User).order_by(User.id)
 * equals
 
-        session.query(User).filter(User.name == 'ed')
+    query.filter(User.name == 'ed').all()
 * not equal
 
-        session.query(User).filter(User.name !='ed')
+    query.filter(User.name !='ed').all()
 * LIKE
 
-        session.query(User).filter(User.name.like('%d%')
+    query.filter(User.name.like('%d%')
 * IN:
 
-        session.query(User).filter(User.name.in_(['a','b','c'])
+    query.filter(User.name.in_(['a','b','c'])
 * NOT IN:
 
-        session.query(User).filter(~User.name.in_(['ed','x'])
+    query.filter(~User.name.in_(['ed','x'])
 * IS NULL:
 
-        session.query(User).filter(User.name==None)
+    query.filter(User.name==None).all()
 * IS NOT NULL:
 
-        session.query(User).filter(User.name!=None)
+    query.filter(User.name!=None).all()
 * AND
 
-        from sqlalchemy import and_
-        filter(and_(User.name == 'ed',User.fullname=='xxx'))    
+    from sqlalchemy import and_
+    query.filter(and_(User.name == 'ed',User.fullname=='xxx')).all()  
     或者多次调用filter或filter_by
 
-        session.query(User).filter(User.name =='ed').filter(User.fullname=='xx')
+    query.filter(User.name =='ed').filter(User.fullname=='xx').all()
     还可以是：  
         
-        session.query(User).filter(User.name == ‘ed’, User.fullname == ‘Ed Jones’)
+    query.filter(User.name == 'ed', User.fullname == 'Ed Jones').all()
 * OR
 
-        from sqlalchemy import or_
-        session.query(User).filter(or_(User.name == ‘ed’, User.name == ‘wendy’))
+    from sqlalchemy import or_
+    query.filter(or_(User.name == 'ed', User.name == 'wendy')).all()
 
 对比一下Django：Django中ORM的filter方法里面只有一个等号，比如：  
 
     Entry.objects.all().filter(pub_date__year=2006)
 ##### #查询返回结果
 
-* query(User).all()，all()返回列表  
-* query(User).first()：返回第一个元素
-* query(User).one()有且只有一个元素时才正确返回。
+* query.all()，all()返回列表  
+* query.first()：返回第一个元素
+* query.one()有且只有一个元素时才正确返回。
 
 此外，filter函数还可以接收text对象，text是SQL查询语句的字面对象，比如：  
     
-    for user in session.query(User).filter(text(“id<224”)).order_by(text(“id”)).all():
-        print user.name
+    from sqlalchemy import text
+    for user in session.query(User).filter(text("id<224")).order_by(text("id")).all():
+        print (user.name)
 #### #count
 有两种count，第一种是纯粹是执行SQL语句后返回有多少行，对应的函数count()，第二个是func.count()，适用在分组统计，比如按性别分组时，男的有多少，女的多少：  
 
-    session.query(User).filter(User.name==’ed’).count()
-    session.query(func.count(), User.name).group_by(User.name).all( )
+    from sqlalchemy import func
+    session.query(User).filter(User.name=='ed').count()
+    session.query(func.count(), User.name).group_by(User.name).all()
 
 #### #Relattionship
 SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一对一**,**多对多**  
@@ -178,11 +182,14 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 因为外键(ForeignKey)始终定义在多的一方.如果relationship定义在多的一方,那就是多对一,一对多与多对一的区别在于其关联(relationship)的属性在多的一方还是一的一方，如果relationship定义在一的一方那就是一对多.  
 这里的例子中,一指的是Parent,一个parent有多个child.  
 
+    from sqlalchemy import Column, Integer, Numeric, String, DateTime, ForeignKey, Boolean
+    from sqlalchemy.orm import relationship, backref
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         children = relationship("Child",backref='parent')
-    
+
     class Child(Base):
         __tablename__ = 'child'
         id = Column(Integer,primary_key = True)
@@ -193,12 +200,14 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
         child_id = Column(Integer, ForeignKey('child.id'))
         child = relationship("Child", backref="parents")
-    
+
     class Child(Base):
         __tablename__ = 'child'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
 
 为了建立双向关系,可以在relationship()中设置backref（详情[参考](http://docs.sqlalchemy.org/en/latest/orm/backref.html#relationships-backref)）,Child对象就有parents属性.设置 `cascade= 'all'`，可以级联删除  
