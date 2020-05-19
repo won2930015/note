@@ -127,13 +127,13 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
         query.filter(User.name !='ed').all()
 * LIKE
 
-        query.filter(User.name.like('%d%')
+        query.filter(User.name.like('%d%') #?
 * IN:
 
-        query.filter(User.name.in_(['a','b','c'])
+        query.filter(User.name.in_(['a','b','c']) #?
 * NOT IN:
 
-        query.filter(~User.name.in_(['ed','x'])
+        query.filter(~User.name.in_(['ed','x']) #?
 * IS NULL:
 
         query.filter(User.name==None).all()
@@ -214,9 +214,10 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         children = relationship("Child",cascade='all',backref='parent')
-    
+
     def delete_parent():
         session = Session()
         parent = session.query(Parent).get(2)
@@ -230,23 +231,27 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
         child = relationship("Child", uselist=False, backref="parent")
     
     class Child(Base):
         __tablename__ = 'child'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('parent.id'))
 从多对一转换到一对一:  
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
         child_id = Column(Integer, ForeignKey('child.id'))
         child = relationship("Child", backref=backref("parent", uselist=False))
     
     class Child(Base):
         __tablename__ = 'child'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer, primary_key=True)
 ##### #多对多
 多对多关系需要一个中间关联表,通过参数secondary来指定,  
@@ -269,12 +274,13 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         keyword = Column(String(50),nullable=False,unique=True)
 
 #### #关联查询（query with join）
-简单地可以使用：  
-    for u, a in session.query(User, Address).filter(User.id==Address.user_id).filter(Address.email==’lzjun@qq.com’).all():
-        print u, a
+简单地可以使用： 
+
+    for u, a in session.query(User, Address).filter(User.id==Address.user_id).filter(Address.email=='lzjun@qq.com').all():
+        print( u, a)
 如果是使用真正的关联SQL语法来查询可以使用：  
     
-    session.query(User).join(Address).filter(Address.email==”lzjun@qq.com”).all()
+    session.query(User).join(Address).filter(Address.email=="lzjun@qq.com").all()
 因为这里的外键就一个，系统知道如何去关联
 #### #relationship()API
 [relationship()](http://docs.sqlalchemy.org/en/latest/orm/relationships.html#relationships-api)函数接收的参数非常多，比如：backref，secondary，primaryjoin，等等。列举一下我用到的参数:  
