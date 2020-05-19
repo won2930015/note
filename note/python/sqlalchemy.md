@@ -121,39 +121,39 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
     query=session.query(User).order_by(User.id)
 * equals
 
-    query.filter(User.name == 'ed').all()
+        query.filter(User.name == 'ed').all()
 * not equal
-
-    query.filter(User.name !='ed').all()
+        
+        query.filter(User.name !='ed').all()
 * LIKE
 
-    query.filter(User.name.like('%d%')
+        query.filter(User.name.like('%d%')
 * IN:
 
-    query.filter(User.name.in_(['a','b','c'])
+        query.filter(User.name.in_(['a','b','c'])
 * NOT IN:
 
-    query.filter(~User.name.in_(['ed','x'])
+        query.filter(~User.name.in_(['ed','x'])
 * IS NULL:
 
-    query.filter(User.name==None).all()
+        query.filter(User.name==None).all()
 * IS NOT NULL:
 
-    query.filter(User.name!=None).all()
+        query.filter(User.name!=None).all()
 * AND
 
-    from sqlalchemy import and_
-    query.filter(and_(User.name == 'ed',User.fullname=='xxx')).all()  
+        from sqlalchemy import and_
+        query.filter(and_(User.name == 'ed',User.fullname=='xxx')).all()  
     或者多次调用filter或filter_by
 
-    query.filter(User.name =='ed').filter(User.fullname=='xx').all()
+        query.filter(User.name =='ed').filter(User.fullname=='xx').all()
     还可以是：  
         
-    query.filter(User.name == 'ed', User.fullname == 'Ed Jones').all()
+        query.filter(User.name == 'ed', User.fullname == 'Ed Jones').all()
 * OR
 
-    from sqlalchemy import or_
-    query.filter(or_(User.name == 'ed', User.name == 'wendy')).all()
+        from sqlalchemy import or_
+        query.filter(or_(User.name == 'ed', User.name == 'wendy')).all()
 
 对比一下Django：Django中ORM的filter方法里面只有一个等号，比如：  
 
