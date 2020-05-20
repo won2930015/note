@@ -161,7 +161,7 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
 ##### #查询返回结果
 
 * query.all()，all()返回列表  
-* query.first()：返回第一个元素
+* query.first()：返回第一个元素,返回的是tuple
 * query.one()有且只有一个元素时才正确返回。
 
 此外，filter函数还可以接收text对象，text是SQL查询语句的字面对象，比如：  
@@ -435,14 +435,14 @@ session刚开始无状态，直到有query发起时。
 ##### #对象的四种状态
  对象在session中可能存在的四种状态包括：  
 
- - **Transient** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
- - **Pending** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
- - **Persistent** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying一个已经存在的实例。
- - **Detached**：一个对象它有记录在数据库中，但是不在任何session中，
+ - **Transient(瞬时的)** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
+ - **Pending(挂起的)** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
+ - **Persistent(持久的)** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying一个已经存在的实例。
+ - **Detached(分离的)** ：一个对象它有记录在数据库中，但是不在任何session中，
 
 
-#### #Hibernate中的Session
-SessionFactory创建Session，SessionFactory是线程安全的，而Session是线程不安全的。Session是轻量级的，创建和删除都不需要耗太大的资源，这与JDBC的connection不一样，Connection的创建时很好资源的。  
+#### #Hibernate(休眠)中的Session
+SessionFactory创建Session，SessionFactory是线程安全的，而Session是线程不安全的。Session是轻量级的，创建和删除都不需要耗太大的资源，这与JDBC(Java Data Base Connectivity,java数据库连接)的connection不一样，Connection的创建时很耗资源的。  
 Session对象内部有一个缓存，称之为Hibernate第一级缓存，每个session实例都有自己的缓存，存放的对象是当前工作单元中加载的对象。  
 Hibernate Session 缓存三大作用：  
 1. 减少数据库的访问频率，提高访问性能
@@ -471,7 +471,7 @@ session的query方法就可以创建一个查询对象，
         ed_user = User(name='zhangsan')
         session.add(ed_user)
         user = session.query(User).filter_by(name='zhangsan').first()
-        print ed_user == user
+        print (ed_user == user)
 这里的ed_user == user 返回True，session中会根据用主键作为key，object作为vlaue缓存在session中
 
 
@@ -479,8 +479,8 @@ session的query方法就可以创建一个查询对象，
     def test1():
         session = Session()
         jack = session.query(User).filter_by(name='lzjun').one()
-        print jack
-        print jack.addresses
+        print (jack)
+        print (jack.addresses)
 默认sqlalchemy 使用的时懒加载的模式，查询user的时候，并不会查询user.addresses，只有真正使用user.addresses的时候
 才会触发user.addresses的查询语句。  
 
@@ -490,15 +490,16 @@ session的query方法就可以创建一个查询对象，
         jack = session.query(User).\
                 options(subqueryload(User.addresses)).\
                 filter_by(name='lzjun').one()
-        print jack
+        print (jack)
 使用subqueryload操作，饿汉式加载，查询user的时候，就把addresses查询出来了。  
 
 
 #### #传统映射
 用Table构建一个table metadata，然后通过映射函数mapper与User关联起来  
 
-    from sqlalchemy import Table,Metadata
-    metadata = Metadata()
+    from sqlalchemy import Table,MetaData
+    from sqlalchemy.orm import mapper
+    metadata = MetaData()
     
     user = Table('user',metadata,
             Column('id',Integer,primary_key = True),
@@ -506,11 +507,14 @@ session的query方法就可以创建一个查询对象，
     class User(object):
         def __init__(self,name):
             self.name = name
+    
     mapper(User,user)
 
 等价于：  
 
     class User(Base):
+        __tablename__ = 'users'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         name = Column(String)
         def __init__(self,name):
@@ -521,21 +525,23 @@ SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因�
 
     user = session.query(User).get(id)
     session.close()
-    print user.comments  #this will raise DetachedInstanceError
+    print (user.comments)  #this will raise DetachedInstanceError
 如果你需要在对象 detach 后访问 relationships（例如需要跨进程共享对象），则应该使用 Eager Loading 策略：
 
     session.query(User).options(joinedload('comments')).get(id) #joinedload('comments'):饿加载?
     session.close()
-    print user.comments  #OK
+    print (user.comments)  #OK
 如果需要加载所有的 relationships ，可以设置 Default Loading Strategies(默认 加载 策略) :
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         children = relationship("Child",backref='parent')
     
     class Child(Base):
         __tablename__ = 'child'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         parent_id = Column(Integer,ForeignKey('parent.id'))
 
@@ -555,6 +561,7 @@ SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因�
 
     class Parent(Base):
         __tablename__ = 'parent'
+        __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
         children = relationship("Child",cascade='all',backref='parent')
     
@@ -594,10 +601,10 @@ session刚开始无状态，直到有query发起时。
 ##### #对象的四种状态
  对象在session中可能存在的四种状态包括：  
 
- - **Transient（瞬时）** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
- - **Pending（挂起）** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
- - **Persistent（持久化）** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying（查询）一个已经存在的实例。
- - **Detached（分离）**：一个对象它有记录在数据库中，但是不在任何session中，
+ - **Transient（瞬时的）** ：实例还不在session中，还没有保存到数据库中去，没有数据库身份，想刚创建出来的对象比如`User()`，仅仅只有`mapper()`与之关联  
+ - **Pending（挂起的）** ：用add()一个transient对象后，就变成了一个pending对象，这时候仍然没有flushed到数据库中去，直到flush发生。  
+ - **Persistent（持久的）** ：实例出现在session中而且在数据库中也有记录了，通常是通过flush一个pending实例变成Persistent或者从数据库中querying（查询）一个已经存在的实例。
+ - **Detached（分离的）**：一个对象它有记录在数据库中，但是不在任何session中，
 
 
 #### #Hibernate(休眠)中的Session
@@ -631,10 +638,10 @@ Hibernate Session 缓存三大作用：
 
 
 
-    session.query(User).options(joinedload('*')).get(id)
+    session.query(User).options(joinedload('*')).get(id) #饿加载
     session.close()
-    print user.comments  #OK
-    print user.posts  #OK
+    print( user.comments)  #OK
+    print( user.posts)  #OK
 ======
 #### #Relattionship
 
@@ -713,8 +720,8 @@ mapping class link to table metadata
     if __name__ == '__main__':
         Base.metadata.create_all(engine)
         i = Interval(5, 10)
-        print i.length
-        print Interval.length
+        print (i.length)
+        print (Interval.length)
 
 
 输出结果是：
@@ -754,7 +761,7 @@ mapping class link to table metadata
         def radius(self):
             return abs(self.length) / 2  #在Python函数abs()用于实例级操作之上.
     
-        @radius.expression
+        @radius.expression  #当属性被类调用时执行这里。
         def radius(cls):
             return func.abs(cls.length) / 2 #SQL函数abs()通过funcobject用于类级表达式.
 
@@ -780,7 +787,7 @@ mapping class link to table metadata
 #### #mapping class inheritance hierarchies (映射 类 继承 层次)
 
 
-使用memecache做缓存的时候，出现了错误：读取一篇article，异常信息：  
+使用memecache(数据存储)做缓存的时候，出现了错误：读取一篇article，异常信息：  
 
     DetachedInstanceError: Parent instance <Article at 0xb22da4c> is not bound to a Session; lazy load operation of attribute 'user' cannot proceed
 
