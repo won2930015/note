@@ -127,13 +127,13 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
         query.filter(User.name !='ed').all()
 * LIKE
 
-        query.filter(User.name.like('%d%') #?
+        query.filter(User.name.like('%d%')).all()
 * IN:
 
-        query.filter(User.name.in_(['a','b','c']) #?
+        query.filter(User.name.in_(['a','b','c'])).all()
 * NOT IN:
 
-        query.filter(~User.name.in_(['ed','x']) #?
+        query.filter(~User.name.in_(['ed','x'])).all()
 * IS NULL:
 
         query.filter(User.name==None).all()
@@ -285,15 +285,17 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 #### #relationship()API
 [relationship()](http://docs.sqlalchemy.org/en/latest/orm/relationships.html#relationships-api)函数接收的参数非常多，比如：backref，secondary，primaryjoin，等等。列举一下我用到的参数:  
 
-- backref:在一对多或多对一之间建立双向关系,比如:  
+- backref:在一对多或多对一之间建立双向关系,比如:
 
         class Parent(Base):
             __tablename__ = 'parent'
+            __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
             id = Column(Integer, primary_key=True)
             children = relationship("Child", backref="parent")
-        
+
         class Child(Base):
             __tablename__ = 'child'
+            __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
             id = Column(Integer, primary_key=True)
             parent_id = Column(Integer, ForeignKey('parent.id'))
     Prarent对象获取children,parent.children,反过来Child对象可以获取parent:child.parent.
@@ -309,13 +311,13 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     如果是想建立一种双向的关系,那么还是结合backref:  
 
         class Node(Base):
-        __tablename__ = 'node'
-        id = Column(Integer, primary_key=True)
-        parent_id = Column(Integer, ForeignKey('node.id'))
-        data = Column(String(50))
-        children = relationship("Node",
-                    backref=backref('parent', remote_side=[id])
-                )
+            __tablename__ ='node'
+            __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
+            id = Column(Integer, primary_key=True)
+            parent_id = Column(Integer, ForeignKey('node.id'))
+            data = Column(String(50))
+            children = relationship("Node",
+                        backref=backref('parent', remote_side=[id]))
 - primaryjoin:用在一对多或者多对一的关系中,默认情况连接条件就是主键与另一端的外键,用primaryjoin参数可以用来指定连接条件 ,比如:下面user的address必须现address是一'tony'开头:  
 
         class User(Base):
