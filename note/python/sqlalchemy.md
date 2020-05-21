@@ -521,6 +521,7 @@ session的query方法就可以创建一个查询对象，
             self.name = name
             
  完整例子：
+    
     from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey
     from sqlalchemy.orm import mapper
 
