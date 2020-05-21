@@ -519,6 +519,47 @@ session的query方法就可以创建一个查询对象，
         name = Column(String)
         def __init__(self,name):
             self.name = name
+            
+ 完整例子：
+    from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey
+    from sqlalchemy.orm import mapper
+
+    metadata = MetaData()
+
+    user = Table('user', metadata,
+                Column('id', Integer, primary_key=True),
+                Column('name', String(50)),
+                Column('fullname', String(50)),
+                Column('password', String(12))
+            )
+
+    address = Table('address', metadata,
+                Column('id', Integer, primary_key=True),
+                Column('user_id', Integer, ForeignKey('user.id')),
+                Column('email_address', String(50))
+                )
+
+    class User(object):
+        def __init__(self, name, fullname, password):
+            self.name = name
+            self.fullname = fullname
+            self.password = password
+
+    class Address(object):
+        def __init__(self, user_id, email_address):
+            self.user_id = user_id
+            self.fullname = fullname
+            self.email_address = email_address
+
+    mapper(User, user)
+    
+    #DOTO:添加关系映射
+    mapper(User, user, properties={
+        'addresses' : relationship(Address, backref='user', order_by=address.c.id)
+    })
+
+    mapper(Address, address)
+
 
 ### #使用加载策略（Lazy Loading:懒加载，Eager Loading:饿加载）
 SQLAlchemy 默认使用 Lazy Loading 策略加载对象的 relationships。因此，如果你在对象 detached(分离) 之后访问对象的 relationships，会报 "DetachedInstanceError" 分离_实例_错误。例如：
