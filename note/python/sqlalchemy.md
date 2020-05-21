@@ -520,7 +520,7 @@ session的query方法就可以创建一个查询对象，
         def __init__(self,name):
             self.name = name
             
- 完整例子：
+ 完整例子one to one(一对一)：
     
     from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey
     from sqlalchemy.orm import mapper
