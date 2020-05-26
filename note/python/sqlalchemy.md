@@ -273,7 +273,8 @@ backref用于在关系另一端的类中快捷地创建一个指向当前类对�
 #### 至于backref=backref('user', lazy='dynamic')这种用法，翻看一下backref源码便能知晓。
 
     def backref(name, **kwargs):
-        """Create a back reference with explicit keyword arguments, which are the same arguments one can send to :func:`relationship`.
+        """Create a back reference with explicit keyword arguments, which are
+        the same arguments one can send to :func:`relationship`.
 
         Used with the ``backref`` keyword argument to :func:`relationship` in
         place of a string argument, e.g.::
@@ -299,9 +300,9 @@ backref用于在关系另一端的类中快捷地创建一个指向当前类对�
 
 最后需要注意的是在最新版本的sqlalchemy中对relationship引进了back_populates参数。
 
-    Note
+Note
 
-    The relationship.back_populates parameter is a newer version of a very common SQLAlchemy feature called relationship.backref. The relationship.backref parameter hasn’t gone anywhere and will always remain available! The relationship.back_populates is the same thing, except a little more verbose and easier to manipulate. For an overview of the entire topic, see the section Linking Relationships with Backref.
+The relationship.back_populates parameter is a newer version of a very common SQLAlchemy feature called relationship.backref. The relationship.backref parameter hasn’t gone anywhere and will always remain available! The relationship.back_populates is the same thing, except a little more verbose and easier to manipulate. For an overview of the entire topic, see the section Linking Relationships with Backref.
 
 这个参数和backref的区别是只提供单向的关系引用，且必须成对存在，但是完成的功能和backref是一样的，具体用法参见http://docs.sqlalchemy.org/en/rel_1_0/orm/tutorial.html。
 
