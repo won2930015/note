@@ -176,6 +176,154 @@ filter_by接收的参数形式是关键字参数，而filter接收的参数是�
     session.query(User).filter(User.name=='ed').count()
     session.query(func.count(), User.name).group_by(User.name).all()
 
+## ===彻底搞懂 SQLAlchemy中的 backref===
+
+    class User(Base):
+        __tablename__ = 'user'
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+
+        addresses = relationship("Address", backref="user")
+
+
+    class Address(Base):
+        __tablename__ = 'address'
+        id = Column(Integer, primary_key=True)
+        email = Column(String)
+        user_id = Column(Integer, ForeignKey('user.id'))
+    
+简单来说, relationship函数是sqlalchemy对关系之间提供的一种便利的调用方式, backref参数则对关系提供反向引用的声明。
+#### 假如没有relationship:
+
+    class User(Base):
+        __tablename__ = 'user'
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+
+
+    class Address(Base):
+        __tablename__ = 'address'
+        id = Column(Integer, primary_key=True)
+        email = Column(String)
+        user_id = Column(Integer, ForeignKey('user.id'))
+
+#### 我们只能像下面这样调用关系数据:
+给定参数User.name,获取该user的addresses
+    
+    def get_addresses_from_user(user_name):
+        user = session.query(User).filter_by(name=user_name).first()
+        addresses = session.query(Address).filter_by(user_id=user.id).all()
+        return addresses
+
+#### 如果在User中使用relationship定义addresses属性的话，
+
+    class User(Base):
+        __tablename__ = 'user'
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+
+        addresses = relationship("Address")#没有定义 backref
+
+
+    class Address(Base):
+        __tablename__ = 'address'
+        id = Column(Integer, primary_key=True)
+        email = Column(String)
+        user_id = Column(Integer, ForeignKey('user.id'))
+
+则我们可以直接在User对象中通过addresses属性获得指定用户的所有地址。
+
+    def get_addresses_from_user(user_name):
+        user = session.query(User).filter_by(name=user_name).first()
+        return user.addresses
+注意，在上面的addresses属性中我们并没有定义backref属性,所以我们可以通过User对象获取所拥有的地址，但是不能通过Address对象获取到所属的用户.
+
+    >>> u = User()
+    >>> u.addresses
+    []
+    >>> a = Address()
+    >>> a.user
+    Traceback (most recent call last):
+      File "<input>", line 1, in <module>
+    AttributeError: 'Address' object has no attribute 'user'
+但是当我们有从Address对象获取所属用户的需求时，backref参数就派上用场了。
+
+    class User(Base):
+        __tablename__ = 'user'
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+
+        addresses = relationship("Address", backref="user")
+
+
+    class Address(Base):
+        __tablename__ = 'address'
+        id = Column(Integer, primary_key=True)
+        email = Column(String)
+        user_id = Column(Integer, ForeignKey('user.id'))
+    
+    >>> a = Address()
+    >>> a.user
+
+#### 大致原理应该就是:
+sqlalchemy在运行时对Address对象动态的设置了一个指向所属User对象的属性，这样就能在实际开发中使逻辑关系更加清晰，代码更加简洁了。
+简单的说就是：
+backref用于在关系另一端的类中快捷地创建一个指向当前类对象的属性。
+
+#### 至于backref=backref('user', lazy='dynamic')这种用法，翻看一下backref源码便能知晓。
+
+    def backref(name, **kwargs):
+        """Create a back reference with explicit keyword arguments, which are the same arguments one can send to :func:`relationship`.
+
+        Used with the ``backref`` keyword argument to :func:`relationship` in
+        place of a string argument, e.g.::
+
+            'items':relationship(
+                SomeItem, backref=backref('parent', lazy='subquery'))
+
+        .. seealso::
+
+            :ref:`relationships_backref`
+
+        """
+
+        return (name, kwargs)
+
+    :param backref:
+              indicates the string name of a property to be placed on the related
+              mapper's class that will handle this relationship in the other
+              direction. The other property will be created automatically
+              when the mappers are configured.  Can also be passed as a
+              :func:`.backref` object to control the configuration of the
+              new relationship.
+
+最后需要注意的是在最新版本的sqlalchemy中对relationship引进了back_populates参数。
+
+    Note
+
+    The relationship.back_populates parameter is a newer version of a very common SQLAlchemy feature called relationship.backref. The relationship.backref parameter hasn’t gone anywhere and will always remain available! The relationship.back_populates is the same thing, except a little more verbose and easier to manipulate. For an overview of the entire topic, see the section Linking Relationships with Backref.
+
+这个参数和backref的区别是只提供单向的关系引用，且必须成对存在，但是完成的功能和backref是一样的，具体用法参见http://docs.sqlalchemy.org/en/rel_1_0/orm/tutorial.html。
+
+    from sqlalchemy import ForeignKey
+    from sqlalchemy.orm import relationship
+
+    class Address(Base):
+         __tablename__ = 'addresses'
+         id = Column(Integer, primary_key=True)
+         email_address = Column(String, nullable=False)
+         user_id = Column(Integer, ForeignKey('users.id'))
+
+         user = relationship("User", back_populates="addresses")
+
+         def __repr__(self):
+             return "<Address(email_address='%s')>" % self.email_address
+
+    User.addresses = relationship(
+         "Address", order_by=Address.id, back_populates="user")
+         
+### ===彻底搞懂 SQLAlchemy中的 backref END.===
+
 #### #Relattionship
 SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一对一**,**多对多**  
 ##### #一对多(one to many）
