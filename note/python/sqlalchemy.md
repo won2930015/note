@@ -442,6 +442,22 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
     parent = relationship(Parent, backref=backref("children", cascade="all,delete"))
 （暗示from sqlalchemy.orm import backref）
+
+*答2：*
+
+如果您要删除@Steven的附件，session.delete()这对我来说是永远不会发生的。我注意到大部分时间都是通过删除session.query().filter().delete()（它不会将元素放入内存中并直接从db中删除）。使用此方法sqlalchemy cascade='all, delete'无效。但是，有一个解决方案：ON DELETE CASCADE通过db（注意：并非所有数据库都支持它）。
+
+    class Child(Base):
+        __tablename__ = "children"
+
+        id = Column(Integer, primary_key=True)
+        parent_id = Column(Integer, ForeignKey("parents.id", ondelete='CASCADE'))
+
+    class Parent(Base):
+        __tablename__ = "parents"
+
+        id = Column(Integer, primary_key=True)
+        child = relationship(Child, backref="parent", passive_deletes=True)
 #### ===SQLAlchemy：级联删除 END===
 
 
