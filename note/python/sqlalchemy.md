@@ -507,6 +507,43 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         __tablename__ = 'keywords'
         id = Column(Integer,primary_key = True)
         keyword = Column(String(50),nullable=False,unique=True)
+        
+### ===联合唯约束===
+
+联合唯一约束：
+
+    from sqlalchemy import *
+
+    test = Table(
+        'test', metadata,
+        Column('id', BigInteger, primary=True),
+        Column('col1', String(20)),
+        Column('col2', Numeric(20, 4)),
+        UniqueConstraint('col1', 'col2', name='idx_col1_col2')
+    )
+
+联合主键约束
+方法一:
+
+    from sqlalchemy import *
+
+    test = Table(
+        'test', metadata,
+        Column('id', BigInteger),
+        Column('col1', String(20)),
+        PrimaryKeyConstraint('id', 'col1', name='idx_id_col1')
+    )
+    
+方法二:
+
+    from sqlalchemy import *
+
+    test = Table(
+        'test', metadata,
+        Column('id', BigInteger, primary_key=True),
+        Column('col1', String(20), primary_key=True),
+    )
+### ===联合唯约束END===
 
 #### #关联查询（query with join）
 简单地可以使用： 
