@@ -444,7 +444,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     parent = relationship(Parent, backref=backref("children", cascade="all,delete"))
 （暗示from sqlalchemy.orm import backref）
 
-**答2：**如果您要删除@Steven的附件，session.delete()这对我来说是永远不会发生的。我注意到大部分时间都是通过删除session.query().filter().delete()（它不会将元素放入内存中并直接从db中删除）。使用此方法sqlalchemy cascade='all, delete'无效。但是，有一个解决方案：ON DELETE CASCADE通过db（注意：并非所有数据库都支持它）。
+**答2：** 如果您要删除@Steven的附件，session.delete()这对我来说是永远不会发生的。我注意到大部分时间都是通过删除session.query().filter().delete()（它不会将元素放入内存中并直接从db中删除）。使用此方法sqlalchemy cascade='all, delete'无效。但是，有一个解决方案：ON DELETE CASCADE通过db（注意：并非所有数据库都支持它）。
 
     class Child(Base):
         __tablename__ = "children"
@@ -511,6 +511,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 ### ===联合唯约束===
 
 联合唯一约束：
+例子1：
 
     from sqlalchemy import *
 
@@ -521,6 +522,16 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         Column('col2', Numeric(20, 4)),
         UniqueConstraint('col1', 'col2', name='idx_col1_col2')
     )
+    
+例子2：
+
+    class Test(Base):
+        __tablename__ = 'test'
+        __table_args__ = {UniqueConstraint('col1', 'col2', name='idx_col1_col2'),}
+        id = Column(BigInteger,primary_key=True)
+        col1 = Column(String(20))
+        col2 = Column(Numeric(20, 4))
+
 
 联合主键约束
 方法一:
@@ -533,6 +544,14 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         Column('col1', String(20)),
         PrimaryKeyConstraint('id', 'col1', name='idx_id_col1')
     )
+方法一（1） 
+    
+    class Test(Base):
+        __tablename__ = 'test'
+        __table_args__ = {PrimaryKeyConstraint('id', 'col1', name='idx_id_col1'),}
+        id = Column(BigInteger)
+        col1 = Column(String(20))
+
     
 方法二:
 
@@ -543,7 +562,24 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         Column('id', BigInteger, primary_key=True),
         Column('col1', String(20), primary_key=True),
     )
-### ===联合唯约束END===
+方法二（1）
+
+     class Test(Base):
+        __tablename__ = 'test'
+        id = Column(BigInteger,primary_key=True)
+        col1 = Column(String(20),primary_key=True)
+        
+其它约束
+
+    class SomeDataClass(Base):
+        __tablename__ = 'somedatatable'
+        __table_args__ = (ForeignKeyConstraint(['id'], ['other_table.id']),
+                          CheckConstraint(unit_cost >= 0.00',
+                                          name='unit_cost_positive'))
+
+
+
+#### ===联合唯约束END===
 
 #### #关联查询（query with join）
 简单地可以使用： 
