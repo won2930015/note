@@ -365,7 +365,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         __tablename__ = 'parent'
         __table_args__ = {"useexisting": True} #对已有表用指定'extend_existing=True'来重新定义现有表对象上的选项和列。
         id = Column(Integer,primary_key = True)
-        children = relationship("Child",cascade='all',backref='parent')
+        children = relationship("Child",cascade='all, delete, delete-orphan',backref='parent')
 
     def delete_parent():
         session = Session()
