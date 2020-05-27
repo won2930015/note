@@ -374,6 +374,76 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         session.commit()
 不过不设置cascade，删除parent时，其关联的chilren不会删除，只会把chilren关联的parent.id置为空，设置cascade后就可以级联删除children  
 
+### ===SQLAlchemy：级联删除===
+测试用例：
+
+    from sqlalchemy import Column, Integer, ForeignKey
+    from sqlalchemy.orm import relationship
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.declarative import declarative_base
+
+    Base = declarative_base()
+
+    class Parent(Base):
+        __tablename__ = "parent"
+        id = Column(Integer, primary_key = True)
+
+    class Child(Base):
+        __tablename__ = "child"
+        id = Column(Integer, primary_key = True)
+        parentid = Column(Integer, ForeignKey(Parent.id))
+        parent = relationship(Parent, cascade = "all,delete", backref = "children")
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+
+    session = Session()
+
+    parent = Parent()
+    parent.children.append(Child())
+    parent.children.append(Child())
+    parent.children.append(Child())
+
+    session.add(parent)
+    session.commit()
+
+    print "Before delete, children = {0}".format(session.query(Child).count())
+    print "Before delete, parent = {0}".format(session.query(Parent).count())
+
+    session.delete(parent)
+    session.commit()
+
+    print "After delete, children = {0}".format(session.query(Child).count())
+    print "After delete parent = {0}".format(session.query(Parent).count())
+
+    session.close()
+    输出：
+    
+    Before delete, children = 3
+    Before delete, parent = 1
+    After delete, children = 3
+    After delete parent = 0
+问：父与子之间存在简单的一对多关系。该脚本创建一个父级，添加3个子级，然后提交。接下来，它删除父级，但子级仍然存在。为什么？如何使子级联删除？
+答：问题是sqlalchemy认为Child是父级的，因为这是您定义关系的地方（当然，它并不关心您将其称为“ Child”）。
+
+如果您在Parent类上定义关系，它将起作用：
+
+    children = relationship("Child", cascade="all,delete", backref="parent")
+（请注意"Child"为字符串：使用声明式样式时允许使用，以便您可以引用尚未定义的类）
+
+您可能还想添加delete-orphan（delete：删除父级时删除子级，delete-orphan还删除从父级“删除”的所有子级，即使未删除父级也是如此）
+
+编辑：刚刚发现：如果您确实想在Child类上定义关系，则可以这样做，但是您将必须在backref上定义级联（通过显式创建backref）
+如下所示：
+
+    parent = relationship(Parent, backref=backref("children", cascade="all,delete"))
+（暗示from sqlalchemy.orm import backref）
+#### ===SQLAlchemy：级联删除 END===
+
+
 ##### #一对一
 一对一就是多对一和一对多的一个特例,只需在relationship加上一个参数uselist=False替换多的一端就是一对一:  
 从一对多转换到一对一:  
