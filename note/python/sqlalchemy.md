@@ -326,8 +326,9 @@ The relationship.back_populates parameter is a newer version of a very common SQ
 ### ===彻底搞懂 SQLAlchemy中的 backref END.===
 
 #### #Relattionship
-SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一对一**,**多对多**  
-##### #一对多(one to many）
+SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一对一**,**多对多** 
+注：relationship所在的类被认为是父方，ForeignKey所在的类被认为是多的一方
+##### #一对多(one to many）：父方为一，子方为多
 因为外键(ForeignKey)始终定义在多的一方.如果relationship定义在多的一方,那就是多对一,一对多与多对一的区别在于其关联(relationship)的属性在多的一方还是一的一方，如果relationship定义在一的一方那就是一对多.  
 这里的例子中,一指的是Parent,一个parent有多个child.  
 
@@ -344,7 +345,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
         id = Column(Integer,primary_key = True)
         parent_id = Column(Integer,ForeignKey('parent.id'))
 
-##### #多对一(many to one)
+##### #多对一(many to one)：父方为多，子方为一
 这个例子中many是指parent了,意思是一个child可能有多个parent(父亲和母亲),这里的外键(child_id)和relationship(child)都定义在多(parent)的一方  
 
     class Parent(Base):
