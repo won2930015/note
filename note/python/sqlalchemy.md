@@ -426,9 +426,9 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     Before delete, parent = 1
     After delete, children = 3
     After delete parent = 0
-问：父与子之间存在简单的一对多关系。该脚本创建一个父级，添加3个子级，然后提交。接下来，它删除父级，但子级仍然存在。为什么？如何使子级联删除？
+**问：**父与子之间存在简单的一对多关系。该脚本创建一个父级，添加3个子级，然后提交。接下来，它删除父级，但子级仍然存在。为什么？如何使子级联删除？
 
-答：问题是sqlalchemy认为Child是父级的，因为这是您定义关系的地方（当然，它并不关心您将其称为“ Child”）。
+**答1：**问题是sqlalchemy认为Child是父级的，因为这是您定义关系的地方（当然，它并不关心您将其称为“ Child”）。
 
 如果您在Parent类上定义关系，它将起作用：
 
@@ -443,9 +443,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     parent = relationship(Parent, backref=backref("children", cascade="all,delete"))
 （暗示from sqlalchemy.orm import backref）
 
-*答2：*
-
-如果您要删除@Steven的附件，session.delete()这对我来说是永远不会发生的。我注意到大部分时间都是通过删除session.query().filter().delete()（它不会将元素放入内存中并直接从db中删除）。使用此方法sqlalchemy cascade='all, delete'无效。但是，有一个解决方案：ON DELETE CASCADE通过db（注意：并非所有数据库都支持它）。
+**答2：**如果您要删除@Steven的附件，session.delete()这对我来说是永远不会发生的。我注意到大部分时间都是通过删除session.query().filter().delete()（它不会将元素放入内存中并直接从db中删除）。使用此方法sqlalchemy cascade='all, delete'无效。但是，有一个解决方案：ON DELETE CASCADE通过db（注意：并非所有数据库都支持它）。
 
     class Child(Base):
         __tablename__ = "children"
