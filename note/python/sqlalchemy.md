@@ -527,7 +527,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
 
     class Test(Base):
         __tablename__ = 'test'
-        __table_args__ = {UniqueConstraint('col1', 'col2', name='idx_col1_col2'),}
+        __table_args__ = (UniqueConstraint('col1', 'col2', name='idx_col1_col2'),)
         id = Column(BigInteger,primary_key=True)
         col1 = Column(String(20))
         col2 = Column(Numeric(20, 4))
@@ -548,7 +548,7 @@ SQLAlchemy中的映射关系有四种,分别是**一对多**,**多对一**,**一
     
     class Test(Base):
         __tablename__ = 'test'
-        __table_args__ = {PrimaryKeyConstraint('id', 'col1', name='idx_id_col1'),}
+        __table_args__ = (PrimaryKeyConstraint('id', 'col1', name='idx_id_col1'),)
         id = Column(BigInteger)
         col1 = Column(String(20))
 
